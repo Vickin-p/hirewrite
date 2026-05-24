@@ -1,0 +1,1311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>HireWrite — AI Job Ad Generator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet" />
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --cream: #F9F6F0;
+  --ink: #1A1714;
+  --ink-muted: #6B6560;
+  --ink-faint: #C5BFB8;
+  --accent: #C85A2A;
+  --accent-light: #F5E8DF;
+  --accent-dark: #8C3B18;
+  --surface: #FFFFFF;
+  --border: rgba(26,23,20,0.12);
+  --border-strong: rgba(26,23,20,0.25);
+  --green: #2A7A4B;
+  --green-light: #E5F3EC;
+  --blue: #1D5FAD;
+  --blue-light: #E6F0FA;
+  --radius: 4px;
+  --radius-lg: 10px;
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--cream);
+  color: var(--ink);
+  min-height: 100vh;
+}
+
+/* ── HEADER ── */
+header {
+  background: var(--ink);
+  padding: 0 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.logo {
+  font-family: 'DM Serif Display', serif;
+  font-size: 22px;
+  color: #fff;
+  letter-spacing: -0.3px;
+}
+.logo span { color: #E8987A; }
+
+.header-right { display: flex; align-items: center; gap: 12px; }
+
+.nav-link {
+  font-size: 13px;
+  color: rgba(255,255,255,0.55);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: var(--radius);
+  transition: all 0.15s;
+}
+.nav-link:hover { color: #fff; background: rgba(255,255,255,0.08); }
+.nav-link.active { color: #fff; }
+
+.header-divider { width: 1px; height: 18px; background: rgba(255,255,255,0.15); }
+
+.credits-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 20px;
+  padding: 5px 12px;
+}
+.credits-pill .dot { width: 7px; height: 7px; border-radius: 50%; background: #4CAF85; box-shadow: 0 0 5px #4CAF85; }
+.credits-pill span { font-size: 12px; color: rgba(255,255,255,0.7); }
+.credits-pill strong { color: #fff; }
+
+.btn-buy {
+  font-size: 12px;
+  font-weight: 600;
+  color: #E8987A;
+  background: none;
+  border: 1px solid rgba(232,152,122,0.45);
+  border-radius: 4px;
+  padding: 5px 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+  letter-spacing: 0.2px;
+}
+.btn-buy:hover { background: rgba(232,152,122,0.12); }
+
+/* ── HERO ── */
+.hero {
+  background: var(--ink);
+  padding: 52px 32px 60px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(255,255,255,0.013) 40px, rgba(255,255,255,0.013) 41px);
+}
+.hero h1 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 44px;
+  color: #fff;
+  line-height: 1.1;
+  margin-bottom: 14px;
+  position: relative;
+}
+.hero h1 em { font-style: italic; color: #E8987A; }
+.hero p { font-size: 16px; color: rgba(255,255,255,0.5); max-width: 480px; margin: 0 auto; position: relative; }
+
+/* ── TABS ── */
+.tab-bar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  padding: 0 32px;
+  gap: 0;
+  position: sticky;
+  top: 56px;
+  z-index: 90;
+}
+.tab-btn {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-muted);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 14px 18px;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.tab-btn:hover { color: var(--ink); }
+.tab-btn.active { color: var(--ink); border-bottom-color: var(--accent); font-weight: 600; }
+
+/* ── PAGE VIEWS ── */
+.page { display: none; }
+.page.active { display: block; }
+
+/* ── GENERATE TAB ── */
+.main {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 36px 24px 80px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+@media (max-width: 680px) {
+  .main { grid-template-columns: 1fr; }
+  .hero h1 { font-size: 30px; }
+  header { padding: 0 16px; }
+  .tab-bar { padding: 0 8px; }
+  .tab-btn { padding: 12px 10px; font-size: 12px; }
+}
+
+/* ── PANELS ── */
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+.panel:last-child { margin-bottom: 0; }
+
+.panel-header {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--cream);
+}
+.panel-num {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.panel-title { font-size: 12px; font-weight: 600; color: var(--ink); letter-spacing: 0.4px; text-transform: uppercase; }
+
+.panel-body { padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+
+/* ── FORM ELEMENTS ── */
+label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink-muted);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+input[type="text"], textarea, select {
+  width: 100%;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  color: var(--ink);
+  background: var(--cream);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  resize: none;
+}
+input[type="text"]:focus, textarea:focus, select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-light);
+}
+textarea { min-height: 88px; line-height: 1.5; }
+select { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B6560' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; }
+
+.char-count { font-size: 11px; color: var(--ink-faint); text-align: right; margin-top: 4px; }
+
+/* ── VIBE / PLATFORM GRID ── */
+.vibe-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
+.platform-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
+
+.vibe-btn, .platform-btn {
+  padding: 9px 4px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink-muted);
+  background: var(--cream);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.15s;
+  line-height: 1.3;
+}
+.vibe-btn:hover, .platform-btn:hover { border-color: var(--accent); color: var(--accent); }
+.vibe-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+.platform-btn.active { background: var(--ink); border-color: var(--ink); color: #fff; font-weight: 600; }
+
+/* ── TONE SLIDER ── */
+.tone-track { display: flex; gap: 6px; }
+.tone-opt {
+  flex: 1;
+  padding: 8px 4px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--ink-muted);
+  background: var(--cream);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.15s;
+}
+.tone-opt.active { background: var(--blue); border-color: var(--blue); color: #fff; }
+.tone-opt:hover:not(.active) { border-color: var(--blue); color: var(--blue); }
+
+/* ── SALARY ROW ── */
+.salary-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+/* ── GENERATE BTN ── */
+.generate-btn {
+  width: 100%;
+  padding: 15px;
+  background: var(--accent);
+  color: #fff;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  letter-spacing: 0.2px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.generate-btn:hover { background: var(--accent-dark); transform: translateY(-1px); box-shadow: 0 5px 18px rgba(200,90,42,0.3); }
+.generate-btn:active { transform: translateY(0); box-shadow: none; }
+.generate-btn:disabled { background: var(--ink-faint); cursor: not-allowed; transform: none; box-shadow: none; }
+
+/* ── OUTPUT PANEL ── */
+.output-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  position: sticky;
+  top: 110px;
+}
+.output-header {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--cream);
+}
+.output-title-wrap { display: flex; align-items: center; gap: 10px; }
+.output-title { font-size: 12px; font-weight: 600; color: var(--ink); letter-spacing: 0.4px; text-transform: uppercase; }
+.output-format-badge { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 20px; background: var(--blue-light); color: var(--blue); letter-spacing: 0.3px; text-transform: uppercase; }
+
+.output-actions { display: flex; gap: 6px; }
+.icon-btn {
+  height: 30px;
+  padding: 0 10px;
+  border-radius: var(--radius);
+  background: var(--cream);
+  border: 1px solid var(--border);
+  color: var(--ink-muted);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s;
+  white-space: nowrap;
+  font-family: 'DM Sans', sans-serif;
+}
+.icon-btn:hover { border-color: var(--border-strong); color: var(--ink); }
+
+.output-body { padding: 20px; min-height: 380px; }
+.placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 340px;
+  gap: 14px;
+  color: var(--ink-faint);
+  text-align: center;
+}
+.placeholder-icon {
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  border: 2px dashed var(--ink-faint);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+}
+.placeholder p { font-size: 13px; color: var(--ink-faint); line-height: 1.6; }
+.placeholder small { font-size: 11px; color: var(--ink-faint); opacity: 0.7; }
+
+.output-content {
+  font-size: 14px;
+  line-height: 1.75;
+  color: var(--ink);
+  white-space: pre-wrap;
+  display: none;
+}
+.output-content.visible { display: block; }
+
+.streaming-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 15px;
+  background: var(--accent);
+  vertical-align: middle;
+  margin-left: 2px;
+  animation: blink 0.8s step-end infinite;
+}
+@keyframes blink { 50% { opacity: 0; } }
+
+.spinner {
+  width: 16px; height: 16px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── SECTION DIVIDER ── */
+.divider { height: 1px; background: var(--border); margin: 2px 0; }
+
+/* ── TIP ── */
+.tip {
+  font-size: 11px;
+  color: var(--ink-muted);
+  line-height: 1.5;
+  padding: 9px 12px;
+  background: var(--cream);
+  border-radius: var(--radius);
+  border-left: 2px solid var(--accent-light);
+}
+
+/* ── WORD COUNT BAR ── */
+.wc-bar { display: flex; align-items: center; gap: 10px; padding: 10px 20px; border-top: 1px solid var(--border); background: var(--cream); }
+.wc-label { font-size: 11px; color: var(--ink-muted); flex: 1; }
+.wc-pills { display: flex; gap: 6px; }
+.wc-pill {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: var(--cream);
+  border: 1px solid var(--border);
+  color: var(--ink-muted);
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: 'DM Sans', sans-serif;
+}
+.wc-pill:hover { border-color: var(--border-strong); color: var(--ink); }
+.wc-pill.active { background: var(--ink); border-color: var(--ink); color: #fff; }
+
+/* ── HISTORY TAB ── */
+.history-wrap { max-width: 780px; margin: 0 auto; padding: 36px 24px 80px; }
+.history-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+.history-header h2 { font-family: 'DM Serif Display', serif; font-size: 26px; color: var(--ink); }
+
+.history-empty {
+  text-align: center;
+  padding: 80px 24px;
+  color: var(--ink-faint);
+}
+.history-empty p { font-size: 14px; margin-top: 12px; line-height: 1.6; }
+
+.history-list { display: flex; flex-direction: column; gap: 14px; }
+
+.history-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: box-shadow 0.15s, border-color 0.15s;
+}
+.history-card:hover { border-color: var(--border-strong); box-shadow: 0 2px 12px rgba(26,23,20,0.06); }
+
+.hc-header {
+  padding: 14px 18px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+}
+.hc-meta { flex: 1; min-width: 0; }
+.hc-title { font-size: 15px; font-weight: 600; color: var(--ink); margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hc-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+.hc-tag { font-size: 11px; padding: 2px 8px; border-radius: 20px; background: var(--cream); border: 1px solid var(--border); color: var(--ink-muted); }
+.hc-date { font-size: 11px; color: var(--ink-faint); white-space: nowrap; flex-shrink: 0; margin-top: 2px; }
+
+.hc-actions { display: flex; gap: 6px; align-items: center; }
+.hc-btn {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 5px 10px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--cream);
+  color: var(--ink-muted);
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: 'DM Sans', sans-serif;
+}
+.hc-btn:hover { color: var(--ink); border-color: var(--border-strong); }
+.hc-btn.danger:hover { color: #c0392b; border-color: #c0392b; }
+
+.hc-body {
+  border-top: 1px solid var(--border);
+  padding: 18px;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--ink);
+  white-space: pre-wrap;
+  display: none;
+  background: var(--cream);
+}
+.hc-body.open { display: block; }
+
+/* ── HOW IT WORKS TAB ── */
+.guide-wrap { max-width: 680px; margin: 0 auto; padding: 48px 24px 80px; }
+.guide-wrap h2 { font-family: 'DM Serif Display', serif; font-size: 30px; margin-bottom: 8px; }
+.guide-wrap > p { font-size: 15px; color: var(--ink-muted); margin-bottom: 36px; line-height: 1.6; }
+
+.guide-step {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 28px;
+  align-items: flex-start;
+}
+.gs-num {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.gs-body h3 { font-size: 16px; font-weight: 600; margin-bottom: 5px; }
+.gs-body p { font-size: 14px; color: var(--ink-muted); line-height: 1.6; }
+
+.pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 36px; }
+.pricing-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  text-align: center;
+}
+.pricing-card.featured { border-color: var(--accent); }
+.pc-name { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--ink-muted); margin-bottom: 10px; }
+.pc-price { font-family: 'DM Serif Display', serif; font-size: 32px; color: var(--ink); margin-bottom: 4px; }
+.pc-price span { font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--ink-muted); }
+.pc-credits { font-size: 13px; color: var(--ink-muted); margin-bottom: 16px; }
+.pc-btn {
+  width: 100%;
+  padding: 10px;
+  border-radius: var(--radius);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  border: 1px solid var(--border);
+  background: var(--cream);
+  color: var(--ink);
+}
+.pc-btn:hover { border-color: var(--border-strong); }
+.pc-btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.pc-btn.primary:hover { background: var(--accent-dark); }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: var(--ink);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 10px 22px;
+  border-radius: 6px;
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  z-index: 9999;
+  white-space: nowrap;
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+.toast.error { background: #c0392b; }
+
+/* ── STRIPE MODAL ── */
+.modal-backdrop {
+  position: fixed; inset: 0;
+  background: rgba(26,23,20,0.55);
+  backdrop-filter: blur(4px);
+  z-index: 200;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.modal-backdrop.open { display: flex; }
+.modal {
+  background: var(--surface);
+  border-radius: 14px;
+  max-width: 460px;
+  width: 100%;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(26,23,20,0.25);
+}
+.modal-header { padding: 22px 24px 18px; border-bottom: 1px solid var(--border); }
+.modal-header h3 { font-family: 'DM Serif Display', serif; font-size: 22px; margin-bottom: 4px; }
+.modal-header p { font-size: 13px; color: var(--ink-muted); }
+.modal-body { padding: 22px 24px; }
+.credit-options { display: flex; flex-direction: column; gap: 10px; }
+.credit-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.credit-option:hover { border-color: var(--accent); }
+.credit-option.selected { border-color: var(--accent); background: var(--accent-light); }
+.co-info .co-name { font-size: 14px; font-weight: 600; color: var(--ink); }
+.co-info .co-sub { font-size: 12px; color: var(--ink-muted); margin-top: 2px; }
+.co-price { font-size: 18px; font-weight: 600; color: var(--accent); font-family: 'DM Serif Display', serif; }
+.modal-footer { padding: 16px 24px 22px; display: flex; gap: 10px; }
+.modal-cancel {
+  flex: 1;
+  padding: 11px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: none;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink-muted);
+  cursor: pointer;
+}
+.modal-pay {
+  flex: 2;
+  padding: 11px;
+  border: none;
+  border-radius: var(--radius);
+  background: var(--accent);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.modal-pay:hover { background: var(--accent-dark); }
+
+/* ── FOOTER ── */
+footer {
+  background: var(--ink);
+  color: rgba(255,255,255,0.35);
+  font-size: 12px;
+  text-align: center;
+  padding: 20px 24px;
+}
+footer a { color: rgba(255,255,255,0.5); text-decoration: none; margin: 0 8px; }
+footer a:hover { color: #fff; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Hire<span>Write</span></div>
+  <div class="header-right">
+    <button class="nav-link active" onclick="showPage('generate')">Generate</button>
+    <button class="nav-link" onclick="showPage('history')">History</button>
+    <button class="nav-link" onclick="showPage('guide')">How it works</button>
+    <div class="header-divider"></div>
+    <div class="credits-pill">
+      <div class="dot"></div>
+      <span><strong id="credit-display">3</strong> credits</span>
+    </div>
+    <button class="btn-buy" onclick="openModal()">Buy More ↗</button>
+  </div>
+</header>
+
+<!-- GENERATE PAGE -->
+<div id="page-generate" class="page active">
+  <div class="hero">
+    <h1>Job ads that <em>actually</em><br>attract great talent.</h1>
+    <p>5 inputs. One brilliant, platform-ready ad. No generic copy — ever.</p>
+  </div>
+
+  <div class="main">
+
+    <!-- LEFT COLUMN -->
+    <div>
+      <!-- PANEL 1: Job Details -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-num">1</div>
+          <span class="panel-title">Job Details</span>
+        </div>
+        <div class="panel-body">
+          <div>
+            <label for="job-title">Job title *</label>
+            <input type="text" id="job-title" placeholder="e.g. Senior Product Designer" />
+          </div>
+
+          <div class="salary-row">
+            <div>
+              <label for="salary-min">Salary / rate (min)</label>
+              <input type="text" id="salary-min" placeholder="e.g. $80,000" />
+            </div>
+            <div>
+              <label for="salary-max">Max</label>
+              <input type="text" id="salary-max" placeholder="e.g. $110,000" />
+            </div>
+          </div>
+
+          <div>
+            <label for="location">Location / work type</label>
+            <input type="text" id="location" placeholder="e.g. Sydney CBD · 3 days WFH" />
+          </div>
+
+          <div>
+            <label for="responsibilities">Key responsibilities *</label>
+            <textarea id="responsibilities" placeholder="• Lead design sprints&#10;• Own end-to-end product flows&#10;• Collaborate with engineering and product"></textarea>
+            <div class="char-count"><span id="resp-count">0</span> / 800 chars</div>
+          </div>
+
+          <div>
+            <label for="requirements">Must-have requirements *</label>
+            <textarea id="requirements" placeholder="• 4+ years product design experience&#10;• Proficient in Figma&#10;• Strong systems thinking" style="min-height:70px"></textarea>
+          </div>
+
+          <div>
+            <label for="nice-to-have">Nice-to-have skills (optional)</label>
+            <input type="text" id="nice-to-have" placeholder="e.g. Framer, user research, B2B SaaS experience" />
+          </div>
+        </div>
+      </div>
+
+      <!-- PANEL 2: Company & Platform -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-num">2</div>
+          <span class="panel-title">Company & Platform</span>
+        </div>
+        <div class="panel-body">
+          <div>
+            <label>Company vibe *</label>
+            <div class="vibe-grid" id="vibe-grid">
+              <button class="vibe-btn" data-vibe="Fast-moving startup">🚀 Startup</button>
+              <button class="vibe-btn" data-vibe="Established corporate">🏢 Corporate</button>
+              <button class="vibe-btn" data-vibe="Remote-first distributed team">🌍 Remote-first</button>
+              <button class="vibe-btn" data-vibe="Creative agency">🎨 Creative</button>
+              <button class="vibe-btn" data-vibe="High-growth scale-up">📈 Scale-up</button>
+              <button class="vibe-btn" data-vibe="Mission-driven non-profit">💚 Non-profit</button>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div>
+            <label>Target platform *</label>
+            <div class="platform-grid" id="platform-grid">
+              <button class="platform-btn" data-platform="LinkedIn">LinkedIn</button>
+              <button class="platform-btn" data-platform="Seek">Seek</button>
+              <button class="platform-btn" data-platform="Indeed">Indeed</button>
+              <button class="platform-btn" data-platform="Twitter/X">Twitter/X</button>
+              <button class="platform-btn" data-platform="Internal careers page">Internal</button>
+              <button class="platform-btn" data-platform="General job board">Other</button>
+            </div>
+          </div>
+
+          <div>
+            <label>Tone *</label>
+            <div class="tone-track" id="tone-track">
+              <button class="tone-opt" data-tone="Formal & professional">Formal</button>
+              <button class="tone-opt active" data-tone="Friendly & conversational">Friendly</button>
+              <button class="tone-opt" data-tone="Bold & energetic">Bold</button>
+              <button class="tone-opt" data-tone="Quirky & playful">Quirky</button>
+            </div>
+          </div>
+
+          <div>
+            <label for="company-extra">Company pitch (optional)</label>
+            <input type="text" id="company-extra" placeholder="e.g. We're rebuilding healthcare data infrastructure" />
+          </div>
+
+          <div>
+            <label>Ad length</label>
+            <div class="wc-pills" id="length-pills">
+              <button class="wc-pill" data-length="Short (250 words)">Short</button>
+              <button class="wc-pill active" data-length="Medium (400 words)">Medium</button>
+              <button class="wc-pill" data-length="Long (600+ words)">Long</button>
+            </div>
+          </div>
+
+          <div class="tip">💡 Real bullet points in responsibilities get the strongest result. Paste them straight from your brief.</div>
+
+          <button class="generate-btn" id="generate-btn" onclick="generateAd()">
+            <span id="btn-text">✦ Generate Job Ad</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT COLUMN: Output -->
+    <div class="output-panel" id="output-panel">
+      <div class="output-header">
+        <div class="output-title-wrap">
+          <span class="output-title">Your Job Ad</span>
+          <span class="output-format-badge" id="platform-badge">Select platform</span>
+        </div>
+        <div class="output-actions">
+          <button class="icon-btn" title="Copy" onclick="copyOutput()">📋 Copy</button>
+          <button class="icon-btn" title="Download" onclick="downloadOutput()">⬇ .txt</button>
+          <button class="icon-btn" title="Save to history" onclick="saveToHistory()" id="save-btn" style="display:none">🗂 Save</button>
+        </div>
+      </div>
+      <div class="output-body">
+        <div class="placeholder" id="placeholder">
+          <div class="placeholder-icon">✍️</div>
+          <p>Fill in the form and hit<br><strong>Generate Job Ad</strong></p>
+          <small>Uses 1 credit per generation</small>
+        </div>
+        <div class="output-content" id="output-content"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- HISTORY PAGE -->
+<div id="page-history" class="page">
+  <div class="history-wrap">
+    <div class="history-header">
+      <h2>Saved Ads</h2>
+      <button class="icon-btn" onclick="clearHistory()" style="font-size:12px">🗑 Clear all</button>
+    </div>
+    <div id="history-list"></div>
+  </div>
+</div>
+
+<!-- GUIDE PAGE -->
+<div id="page-guide" class="page">
+  <div class="guide-wrap">
+    <h2>How HireWrite works</h2>
+    <p>Write job ads that top candidates actually respond to — in under 60 seconds, optimised for whichever platform you're posting on.</p>
+
+    <div class="guide-step">
+      <div class="gs-num">1</div>
+      <div class="gs-body">
+        <h3>Describe the role</h3>
+        <p>Fill in job title, key responsibilities, and must-have requirements. The more specific you are, the better the ad. Real bullet points beat vague descriptions every time.</p>
+      </div>
+    </div>
+    <div class="guide-step">
+      <div class="gs-num">2</div>
+      <div class="gs-body">
+        <h3>Choose your vibe, platform & tone</h3>
+        <p>A LinkedIn ad for a startup reads completely differently to an Indeed post for a corporate role. HireWrite rewrites everything from scratch based on your selections.</p>
+      </div>
+    </div>
+    <div class="guide-step">
+      <div class="gs-num">3</div>
+      <div class="gs-body">
+        <h3>Generate & copy</h3>
+        <p>Claude writes a complete, platform-ready ad in seconds — with a scroll-stopping hook, structured sections, and a closing CTA. Copy it straight to your clipboard.</p>
+      </div>
+    </div>
+    <div class="guide-step">
+      <div class="gs-num">4</div>
+      <div class="gs-body">
+        <h3>Save to history</h3>
+        <p>Every ad you save is stored locally in your browser. Go back, copy variations, and track what you've posted without ever losing your work.</p>
+      </div>
+    </div>
+
+    <h2 style="margin-top:48px; margin-bottom:8px; font-size:26px;">Credits & pricing</h2>
+    <p style="font-size:15px; color:var(--ink-muted); margin-bottom:24px; line-height:1.6;">Each generation uses 1 credit. Start with 3 free. Add more any time — no subscription required.</p>
+
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <div class="pc-name">Starter</div>
+        <div class="pc-price">$9 <span>once</span></div>
+        <div class="pc-credits">10 credits</div>
+        <button class="pc-btn" onclick="openModal()">Buy credits</button>
+      </div>
+      <div class="pricing-card featured">
+        <div class="pc-name">Popular ★</div>
+        <div class="pc-price">$19 <span>once</span></div>
+        <div class="pc-credits">30 credits</div>
+        <button class="pc-btn primary" onclick="openModal()">Buy credits</button>
+      </div>
+      <div class="pricing-card">
+        <div class="pc-name">Team</div>
+        <div class="pc-price">$49 <span>once</span></div>
+        <div class="pc-credits">100 credits</div>
+        <button class="pc-btn" onclick="openModal()">Buy credits</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- STRIPE MODAL -->
+<div class="modal-backdrop" id="modal" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Add Credits</h3>
+      <p>One-time purchase — no subscription ever.</p>
+    </div>
+    <div class="modal-body">
+      <div class="credit-options" id="credit-options">
+        <div class="credit-option selected" data-pkg="starter" onclick="selectPkg(this)">
+          <div class="co-info">
+            <div class="co-name">Starter Pack</div>
+            <div class="co-sub">10 credits · $0.90 per ad</div>
+          </div>
+          <div class="co-price">$9</div>
+        </div>
+        <div class="credit-option" data-pkg="popular" onclick="selectPkg(this)">
+          <div class="co-info">
+            <div class="co-name">Popular Pack ★</div>
+            <div class="co-sub">30 credits · $0.63 per ad</div>
+          </div>
+          <div class="co-price">$19</div>
+        </div>
+        <div class="credit-option" data-pkg="team" onclick="selectPkg(this)">
+          <div class="co-info">
+            <div class="co-name">Team Pack</div>
+            <div class="co-sub">100 credits · $0.49 per ad</div>
+          </div>
+          <div class="co-price">$49</div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="modal-cancel" onclick="closeModal()">Cancel</button>
+      <button class="modal-pay" onclick="handleStripeCheckout()">Pay with Stripe →</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<footer>
+  <div>© 2025 HireWrite · Built with Claude · <a href="#" onclick="showPage('guide')">Pricing</a> · <a href="#">Privacy</a></div>
+</footer>
+
+<script>
+// ──────────────────────────────────────────────
+// STATE
+// ──────────────────────────────────────────────
+let selectedVibe = '';
+let selectedPlatform = '';
+let selectedTone = 'Friendly & conversational';
+let selectedLength = 'Medium (400 words)';
+let isGenerating = false;
+let outputText = '';
+let currentHistory = JSON.parse(localStorage.getItem('hw_history') || '[]');
+let credits = parseInt(localStorage.getItem('hw_credits') || '3');
+let selectedPkg = 'starter';
+
+// ──────────────────────────────────────────────
+// INIT
+// ──────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  updateCreditDisplay();
+  renderHistory();
+
+  document.getElementById('responsibilities').addEventListener('input', function() {
+    document.getElementById('resp-count').textContent = this.value.length;
+  });
+
+  document.querySelectorAll('.vibe-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.vibe-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      selectedVibe = btn.dataset.vibe;
+    });
+  });
+
+  document.querySelectorAll('.platform-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.platform-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      selectedPlatform = btn.dataset.platform;
+      document.getElementById('platform-badge').textContent = selectedPlatform;
+    });
+  });
+
+  document.querySelectorAll('.tone-opt').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tone-opt').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      selectedTone = btn.dataset.tone;
+    });
+  });
+
+  document.querySelectorAll('.wc-pill').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.wc-pill').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      selectedLength = btn.dataset.length;
+    });
+  });
+});
+
+// ──────────────────────────────────────────────
+// PAGE NAVIGATION
+// ──────────────────────────────────────────────
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-link').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  const btns = document.querySelectorAll('.nav-link');
+  const map = { generate: 0, history: 1, guide: 2 };
+  if (map[name] !== undefined) btns[map[name]].classList.add('active');
+  if (name === 'history') renderHistory();
+}
+
+// ──────────────────────────────────────────────
+// CREDITS
+// ──────────────────────────────────────────────
+function updateCreditDisplay() {
+  document.getElementById('credit-display').textContent = credits;
+}
+function saveCredits() {
+  localStorage.setItem('hw_credits', credits.toString());
+  updateCreditDisplay();
+}
+
+// ──────────────────────────────────────────────
+// GENERATE
+// ──────────────────────────────────────────────
+async function generateAd() {
+  const jobTitle = document.getElementById('job-title').value.trim();
+  const responsibilities = document.getElementById('responsibilities').value.trim();
+  const requirements = document.getElementById('requirements').value.trim();
+  const niceTo = document.getElementById('nice-to-have').value.trim();
+  const companyExtra = document.getElementById('company-extra').value.trim();
+  const salaryMin = document.getElementById('salary-min').value.trim();
+  const salaryMax = document.getElementById('salary-max').value.trim();
+  const location = document.getElementById('location').value.trim();
+
+  if (!jobTitle) return showToast('Please enter a job title', true);
+  if (!responsibilities) return showToast('Please add key responsibilities', true);
+  if (!requirements) return showToast('Please add requirements', true);
+  if (!selectedVibe) return showToast('Pick a company vibe', true);
+  if (!selectedPlatform) return showToast('Pick a target platform', true);
+
+  if (credits <= 0) {
+    openModal();
+    return showToast('No credits left — buy more to continue', true);
+  }
+
+  isGenerating = true;
+  const btn = document.getElementById('generate-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div><span>Writing your ad...</span>';
+
+  document.getElementById('placeholder').style.display = 'none';
+  document.getElementById('save-btn').style.display = 'none';
+  const outputEl = document.getElementById('output-content');
+  outputEl.classList.add('visible');
+  outputEl.innerHTML = '<span class="streaming-cursor"></span>';
+  outputText = '';
+
+  const salaryStr = salaryMin || salaryMax
+    ? `Salary: ${salaryMin}${salaryMax ? ' – ' + salaryMax : ''}`
+    : '';
+
+  const prompt = `You are a world-class recruitment copywriter who writes compelling, inclusive, platform-optimised job advertisements. Avoid clichés like "ninja", "rockstar", "fast-paced environment".
+
+Write a complete, ready-to-post job ad with these exact details:
+
+Job Title: ${jobTitle}
+${salaryStr ? salaryStr + '\n' : ''}${location ? 'Location: ' + location + '\n' : ''}Company Vibe: ${selectedVibe}
+Target Platform: ${selectedPlatform}
+Tone: ${selectedTone}
+Length: ${selectedLength}
+${companyExtra ? 'Company Story: ' + companyExtra + '\n' : ''}
+Key Responsibilities:
+${responsibilities}
+
+Must-Have Requirements:
+${requirements}
+${niceTo ? '\nNice to Have:\n' + niceTo : ''}
+
+Structure your ad with these exact sections (use the section headers as written):
+1. [HOOK] — A one-sentence scroll-stopping opener that sells the opportunity, not the company
+2. [ABOUT THE ROLE] — 2–3 sentences on the impact and ownership this role has
+3. [WHAT YOU'LL DO] — Responsibilities as 5–7 punchy bullet points starting with action verbs
+4. [WHAT YOU BRING] — Requirements as 4–6 bullet points (must-haves only, separated from nice-to-haves)
+${niceTo ? '5. [BONUS POINTS] — Nice-to-have skills as 2–4 brief bullet points\n' : ''}[WHY US] — 2–3 sentences that sell the culture and mission with ${selectedVibe} energy. No generic claims — be specific.
+[HOW TO APPLY] — A warm, specific call to action optimised for ${selectedPlatform}
+
+Tone guide: ${selectedTone}. Write like a human, not a template.`;
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        stream: true,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    if (!resp.ok) throw new Error('API error: ' + resp.status);
+
+    const reader = resp.body.getReader();
+    const decoder = new TextDecoder();
+    outputEl.innerHTML = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      const chunk = decoder.decode(value);
+      for (const line of chunk.split('\n')) {
+        if (!line.startsWith('data: ')) continue;
+        const raw = line.slice(6);
+        if (raw === '[DONE]') continue;
+        try {
+          const parsed = JSON.parse(raw);
+          if (parsed.type === 'content_block_delta' && parsed.delta?.text) {
+            outputText += parsed.delta.text;
+            outputEl.textContent = outputText;
+            outputEl.scrollTop = outputEl.scrollHeight;
+          }
+        } catch(e) {}
+      }
+    }
+
+    // deduct credit
+    credits = Math.max(0, credits - 1);
+    saveCredits();
+    document.getElementById('save-btn').style.display = 'flex';
+    showToast('✓ Job ad ready — copy, download or save');
+
+  } catch(err) {
+    outputEl.textContent = '⚠ Something went wrong. Check your connection and try again.\n\nError: ' + err.message;
+    showToast('Generation failed — please try again', true);
+    console.error(err);
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '<span id="btn-text">✦ Generate Another</span>';
+  isGenerating = false;
+}
+
+// ──────────────────────────────────────────────
+// COPY / DOWNLOAD / SAVE
+// ──────────────────────────────────────────────
+function copyOutput() {
+  if (!outputText) return showToast('Nothing to copy yet');
+  navigator.clipboard.writeText(outputText).then(() => showToast('✓ Copied to clipboard'));
+}
+
+function downloadOutput() {
+  if (!outputText) return showToast('Nothing to download yet');
+  const blob = new Blob([outputText], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  const title = document.getElementById('job-title').value.trim() || 'job-ad';
+  a.download = title.replace(/\s+/g, '-').toLowerCase() + '.txt';
+  a.click();
+  showToast('✓ Downloaded');
+}
+
+function saveToHistory() {
+  if (!outputText) return;
+  const entry = {
+    id: Date.now(),
+    title: document.getElementById('job-title').value.trim() || 'Untitled',
+    vibe: selectedVibe,
+    platform: selectedPlatform,
+    tone: selectedTone,
+    content: outputText,
+    date: new Date().toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })
+  };
+  currentHistory.unshift(entry);
+  localStorage.setItem('hw_history', JSON.stringify(currentHistory));
+  showToast('✓ Saved to history');
+  document.getElementById('save-btn').style.display = 'none';
+}
+
+// ──────────────────────────────────────────────
+// HISTORY
+// ──────────────────────────────────────────────
+function renderHistory() {
+  const container = document.getElementById('history-list');
+  if (!currentHistory.length) {
+    container.innerHTML = `<div class="history-empty">
+      <div style="font-size:40px">📂</div>
+      <p>No saved ads yet.<br>Generate an ad and click <strong>Save</strong> to store it here.</p>
+    </div>`;
+    return;
+  }
+
+  container.innerHTML = '<div class="history-list">' +
+    currentHistory.map(entry => `
+      <div class="history-card" id="hc-${entry.id}">
+        <div class="hc-header" onclick="toggleCard(${entry.id})">
+          <div class="hc-meta">
+            <div class="hc-title">${escHtml(entry.title)}</div>
+            <div class="hc-tags">
+              ${entry.platform ? `<span class="hc-tag">${escHtml(entry.platform)}</span>` : ''}
+              ${entry.vibe ? `<span class="hc-tag">${escHtml(entry.vibe.split(' ')[0])}</span>` : ''}
+              ${entry.tone ? `<span class="hc-tag">${escHtml(entry.tone.split(' ')[0])}</span>` : ''}
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+            <span class="hc-date">${entry.date}</span>
+            <div class="hc-actions">
+              <button class="hc-btn" onclick="copyCard(event, ${entry.id})">Copy</button>
+              <button class="hc-btn" onclick="downloadCard(event, ${entry.id})">⬇</button>
+              <button class="hc-btn danger" onclick="deleteCard(event, ${entry.id})">✕</button>
+            </div>
+          </div>
+        </div>
+        <div class="hc-body" id="hcb-${entry.id}">${escHtml(entry.content)}</div>
+      </div>`
+    ).join('') + '</div>';
+}
+
+function toggleCard(id) {
+  const body = document.getElementById('hcb-' + id);
+  body.classList.toggle('open');
+}
+
+function copyCard(e, id) {
+  e.stopPropagation();
+  const entry = currentHistory.find(h => h.id === id);
+  if (entry) navigator.clipboard.writeText(entry.content).then(() => showToast('✓ Copied'));
+}
+
+function downloadCard(e, id) {
+  e.stopPropagation();
+  const entry = currentHistory.find(h => h.id === id);
+  if (!entry) return;
+  const blob = new Blob([entry.content], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = entry.title.replace(/\s+/g, '-').toLowerCase() + '.txt';
+  a.click();
+}
+
+function deleteCard(e, id) {
+  e.stopPropagation();
+  currentHistory = currentHistory.filter(h => h.id !== id);
+  localStorage.setItem('hw_history', JSON.stringify(currentHistory));
+  renderHistory();
+}
+
+function clearHistory() {
+  if (!currentHistory.length) return showToast('Nothing to clear');
+  if (!confirm('Delete all saved ads?')) return;
+  currentHistory = [];
+  localStorage.setItem('hw_history', JSON.stringify(currentHistory));
+  renderHistory();
+  showToast('✓ History cleared');
+}
+
+// ──────────────────────────────────────────────
+// STRIPE MODAL
+// ──────────────────────────────────────────────
+const pkgCredits = { starter: 10, popular: 30, team: 100 };
+// ⚠ REPLACE THESE WITH YOUR REAL STRIPE PAYMENT LINKS
+const stripeLinks = {
+  starter: 'https://buy.stripe.com/YOUR_STARTER_LINK',
+  popular: 'https://buy.stripe.com/YOUR_POPULAR_LINK',
+  team:    'https://buy.stripe.com/YOUR_TEAM_LINK'
+};
+
+function openModal() { document.getElementById('modal').classList.add('open'); }
+function closeModal() { document.getElementById('modal').classList.remove('open'); }
+function closeModalOutside(e) { if (e.target === document.getElementById('modal')) closeModal(); }
+
+function selectPkg(el) {
+  document.querySelectorAll('.credit-option').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedPkg = el.dataset.pkg;
+}
+
+function handleStripeCheckout() {
+  const url = stripeLinks[selectedPkg];
+  if (!url || url.includes('YOUR_')) {
+    // ── DEMO MODE: simulate purchase ──
+    credits += pkgCredits[selectedPkg];
+    saveCredits();
+    closeModal();
+    showToast(`✓ Added ${pkgCredits[selectedPkg]} credits! (Stripe not yet connected)`);
+    return;
+  }
+  // Real Stripe redirect
+  window.open(url + '?client_reference_id=hw_' + Date.now(), '_blank');
+  closeModal();
+  showToast('Redirecting to Stripe...');
+}
+
+// ──────────────────────────────────────────────
+// TOAST
+// ──────────────────────────────────────────────
+let toastTimer;
+function showToast(msg, isError = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.toggle('error', isError);
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ──────────────────────────────────────────────
+// UTILS
+// ──────────────────────────────────────────────
+function escHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>
